@@ -43,7 +43,14 @@ def test_extract_sends_cached_system_prompt_and_tool(monkeypatch):
     assert captured["operation"] == "extract_deadlines"
     assert captured["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert captured["tools"] == [ex.TOOL]
-    assert "tool_choice" not in captured          # forced tool choice is rejected on Opus 5.5
+    assert "tool_choice" not in captured          # keeps the model swappable: Opus 5.5 / Sonnet 5.5 reject forced tool choice
+    assert captured["thinking"] == {"type": "adaptive"}
+
+
+def test_client_picks_bedrock_path_from_model_id():
+    assert llm.uses_invoke_model("global.anthropic.claude-sonnet-4-6")
+    assert llm.uses_invoke_model("us.anthropic.claude-sonnet-4-6")
+    assert not llm.uses_invoke_model("anthropic.claude-opus-4-8")
 
 
 def test_examples_in_prompt_match_schema_field_names():

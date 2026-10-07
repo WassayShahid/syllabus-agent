@@ -20,6 +20,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "backend" / "src"))
 sys.path.insert(0, str(HERE))
 
+from lib.llm import DEFAULT_MODEL_ID  # noqa: E402
 from scoring import score, summarize  # noqa: E402
 
 
@@ -84,7 +85,7 @@ def main():
     out_dir.mkdir(exist_ok=True)
     out = out_dir / f"{datetime.now().strftime('%Y-%m-%dT%H-%M-%S')}.json"
     out.write_text(json.dumps({
-        "model": os.environ.get("MODEL_ID", "anthropic.claude-opus-5-5"),
+        "model": os.environ.get("MODEL_ID", DEFAULT_MODEL_ID),
         "summary": summary,
         "perFile": per_file,
         "predictions": predictions,

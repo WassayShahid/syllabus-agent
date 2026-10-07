@@ -1,8 +1,9 @@
 """Pipeline step 3: syllabus text -> structured deadlines with Claude.
 
-Bedrock's Messages endpoint has no structured-outputs mode and Claude Opus 5.5 rejects a forced
-tool_choice, so the prompt asks for exactly one `record_course_outline` call and the validate step
-re-checks every field in code. The tool schema is the contract.
+Bedrock's Messages endpoint has no structured-outputs mode, and newer models (Opus 5.5, Sonnet 5.5)
+reject a forced tool_choice. To keep the model swappable, the prompt asks for exactly one
+`record_course_outline` call and the validate step re-checks every field in code.
+The tool schema is the contract.
 
 Output: {"courseCode", "courseTitle", "deadlines": [...]} under $.extraction
 """
@@ -131,6 +132,7 @@ def extract(pages, term_start):
     response = llm.create(
         "extract_deadlines",
         max_tokens=16000,
+        thinking={"type": "adaptive"},       # Sonnet 4.6 only thinks when asked to
         output_config={"effort": "medium"},
         # Stable prefix (tools + system) gets an explicit cache breakpoint.
         system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],

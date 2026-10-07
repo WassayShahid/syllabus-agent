@@ -98,8 +98,25 @@ def test_cognito_pool_and_public_client(template):
 def test_llm_lambdas_get_model_and_bedrock_permissions(template):
     template.has_resource_properties("AWS::Lambda::Function", {
         "Handler": "extract_deadlines.handler",
-        "Environment": {"Variables": Match.object_like({"MODEL_ID": "anthropic.claude-opus-5-5"})},
+        "Environment": {"Variables": Match.object_like({"MODEL_ID": "global.anthropic.claude-sonnet-4-6"})},
     })
+    # inference profile via InvokeModel: profile ARN + base model in any routed region
+    template.has_resource_properties("AWS::IAM::Policy", {
+        "PolicyDocument": {"Statement": Match.array_with([
+            Match.object_like({
+                "Action": "bedrock:InvokeModel",
+                "Resource": Match.array_with([
+                    "arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-6",
+                    "arn:aws:bedrock:::foundation-model/anthropic.claude-sonnet-4-6",
+                ]),
+            }),
+        ])},
+    })
+
+
+def test_messages_api_models_use_mantle_permission():
+    app = core.App(context={"aws:cdk:bundling-stacks": [], "modelId": "anthropic.claude-opus-4-8"})
+    template = assertions.Template.from_stack(InfraStack(app, "mantle"))
     template.has_resource_properties("AWS::IAM::Policy", {
         "PolicyDocument": {"Statement": Match.array_with([
             Match.object_like({"Action": "bedrock-mantle:CreateInference"}),

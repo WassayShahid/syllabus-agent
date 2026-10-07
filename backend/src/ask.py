@@ -189,6 +189,7 @@ def run(agent, question, history=None):
         resp = llm.create(
             "ask",
             max_tokens=8000,
+            thinking={"type": "adaptive"},
             output_config={"effort": "low"},
             system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
             tools=TOOLS,

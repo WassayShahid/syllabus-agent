@@ -1,13 +1,21 @@
-"""Claude on Amazon Bedrock (Messages API endpoint) with per-request token logging."""
+"""Claude on Amazon Bedrock with per-request token logging.
+
+Two Bedrock paths, picked from the model ID:
+- cross-region inference profiles (`global.` / `us.` / `eu.` ... prefix, e.g. Claude Sonnet 4.6)
+  go through bedrock-runtime InvokeModel (`AnthropicBedrock`)
+- bare `anthropic.` IDs (Claude Opus 4.7 and later) go through the Messages API endpoint
+  (`AnthropicBedrockMantle`)
+Both expose the same `messages.create`.
+"""
 import os
 from functools import cache
 
 import anthropic
-from anthropic import AnthropicBedrockMantle
+from anthropic import AnthropicBedrock, AnthropicBedrockMantle
 
 from lib import metrics
 
-DEFAULT_MODEL_ID = "anthropic.claude-opus-5-5"
+DEFAULT_MODEL_ID = "global.anthropic.claude-sonnet-4-6"
 
 
 class RetryableModelError(Exception):
@@ -18,14 +26,21 @@ class ModelRefusalError(Exception):
     """The model declined the request (stop_reason == "refusal")."""
 
 
+def model_id():
+    return os.environ.get("MODEL_ID", DEFAULT_MODEL_ID)
+
+
+def uses_invoke_model(model):
+    return not model.startswith("anthropic.")
+
+
 @cache
 def client():
     # Credentials come from the Lambda execution role via the default AWS chain.
-    return AnthropicBedrockMantle(aws_region=os.environ.get("AWS_REGION", "us-east-1"), max_retries=3)
-
-
-def model_id():
-    return os.environ.get("MODEL_ID", DEFAULT_MODEL_ID)
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    if uses_invoke_model(model_id()):
+        return AnthropicBedrock(aws_region=region, max_retries=3)
+    return AnthropicBedrockMantle(aws_region=region, max_retries=3)
 
 
 def create(operation, **kwargs):

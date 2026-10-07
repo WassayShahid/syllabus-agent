@@ -36,7 +36,7 @@ flowchart LR
       M & T & P & F -. error .-> FAIL[mark_failed]
     end
 
-    X & ASK --> BR[Amazon Bedrock<br/>Claude Opus 5.5]
+    X & ASK --> BR[Amazon Bedrock<br/>Claude Sonnet 4.6]
     IX & ASK --> TI[Bedrock<br/>Titan Text Embeddings v2]
     UP & RD & ASK & SV & IX & F & FAIL --> DDB[(DynamoDB<br/>single table + GSI)]
     SFN & UP & RD & ASK -.-> CW[CloudWatch<br/>alarms, token metrics, dashboard]
@@ -110,7 +110,7 @@ eval/               hand-labelled accuracy evaluation
 
 ## Setup
 
-**Prerequisites:** AWS account, AWS CLI v2, Node 22+, Python 3.12+, CDK CLI (`npm i -g aws-cdk`). In the Bedrock console (us-east-1), enable model access for **Claude Opus 5.5** and **Titan Text Embeddings V2**.
+**Prerequisites:** AWS account, AWS CLI v2, Node 22+, Python 3.12+, CDK CLI (`npm i -g aws-cdk`). Bedrock models switch on the first time they're used, but Anthropic models may ask first-time accounts for a short use-case form: in the Bedrock console (us-east-1), open **Model catalog → Claude Sonnet 4.6 → Open in playground** and send one message. Titan Text Embeddings V2 needs no setup.
 
 ```bash
 # 1. backend + infra
@@ -124,7 +124,7 @@ cdk deploy SyllabusAgentStack -c alarmEmail=you@example.com
 
 No Docker needed: Lambda dependencies are bundled with `pip --platform manylinux2014_x86_64` (see `infra/infra/bundling.py`).
 
-Optional context flags: `-c modelId=anthropic.claude-haiku-5-5` (much cheaper, see [Cost](#cost)), `-c allowedOrigins='["https://main.xxxx.amplifyapp.com"]'` to lock CORS to your domain.
+Optional context flags: `-c modelId=…` to try another model (see [Cost](#cost)). IDs with a region prefix such as `global.anthropic.claude-sonnet-4-6` go through Bedrock `InvokeModel`; bare IDs such as `anthropic.claude-opus-4-8` go through the newer Messages API endpoint. The code and IAM permissions pick the right path from the ID. `-c allowedOrigins='["https://main.xxxx.amplifyapp.com"]'` to lock CORS to your domain.
 
 ```bash
 # 2. frontend (local)
@@ -168,22 +168,22 @@ Rough estimates at Anthropic list prices (Bedrock prices may differ; check the [
 
 | Item | Per unit | Notes |
 |---|---|---|
-| Extract one syllabus (Opus 5.5) | ~$0.10–0.15 | ~11k input ($4/MTok) + ~3–5k output incl. thinking ($20/MTok) |
-| Extract one syllabus (Haiku 5.5) | ~$0.003 | `-c modelId=anthropic.claude-haiku-5-5`; run the eval to see if accuracy holds |
-| One `/ask` question (Opus 5.5, low effort) | ~$0.05–0.08 | 2–3 model calls |
+| Extract one syllabus (Sonnet 4.6) | ~$0.08–0.11 | ~11k input ($3/MTok) + ~3–5k output incl. thinking ($15/MTok) |
+| Extract one syllabus (Opus 4.8) | ~$0.13–0.18 | `-c modelId=anthropic.claude-opus-4-8`; run the eval to see whether it's worth it |
+| One `/ask` question (Sonnet 4.6, low effort) | ~$0.05–0.06 | 2–3 model calls |
 | Embeddings (Titan v2) | < $0.001 per syllabus | |
 | Lambda, Step Functions, DynamoDB on-demand, S3, API Gateway, Cognito | ≈ $0 at student scale | mostly free tier; ~10 state transitions per upload |
 | CloudWatch alarms (13) | ~$1.30 / month | $0.10 per alarm |
 
-A student with 5 courses who asks 50 questions a term costs roughly **$3–5 on Opus 5.5** or **well under $1 on Haiku 5.5**, plus about $1.30/month for alarms.
+A student with 5 courses who asks 50 questions a term costs roughly **$3 on Sonnet 4.6**, plus about $1.30/month for alarms.
 
 ## Design trade-offs
 
 - **Vector search in DynamoDB, brute force.** One user has a few hundred chunks, so loading them and computing cosine in the Lambda takes milliseconds and costs nothing at rest. OpenSearch Serverless would add a ~$170+/month floor for no visible benefit. If chunk counts grew to tens of thousands per query, I'd move to S3 Vectors or OpenSearch.
 - **Agent with tools instead of a hand-written classifier.** Mixed questions ("what's due next week and what's the late penalty?") need both SQL-style and semantic lookups. Letting the model choose avoids a brittle routing step, and the bounded loop (max 6 turns) keeps cost predictable.
-- **Tool-call JSON + code validation instead of structured outputs.** The Bedrock Messages endpoint doesn't offer structured outputs, and Opus 5.5 doesn't accept a forced tool choice, so the schema lives on the tool and the `validate` step enforces it. It also recomputes week-based dates deterministically. The model handles reading; code handles arithmetic.
+- **Tool-call JSON + code validation instead of structured outputs.** The Bedrock Messages endpoint doesn't offer structured outputs, and the newest models (Opus 5.5, Sonnet 5.5) don't accept a forced tool choice. To keep the model swappable, the schema lives on the tool and the `validate` step enforces it. It also recomputes week-based dates deterministically. The model handles reading; code handles arithmetic.
 - **Step Functions over one big Lambda.** Per-stage retries (only on the steps that call models), a visible execution graph for debugging, extraction and indexing in parallel, and a single catch-all failure branch that always leaves the UI with an explanation.
-- **Opus 5.5 as the default model.** It's the most accurate default for messy real-world outlines. Because the eval gives a single number, swapping in Haiku is a one-flag experiment instead of a guess.
+- **Claude Sonnet 4.6 as the default model.** Opus 5.5 is gated per Bedrock account, and Sonnet 4.6 is a strong, mid-priced reader of messy outlines, served through a `global.` cross-region inference profile for availability. The model ID is a single context flag, and because the eval gives a single number, trying another model is an experiment instead of a guess.
 - **`/ask` is request/response.** API Gateway caps integrations at 30 s, which is enough at low effort. Streaming through a Lambda function URL would be the next step for longer answers.
 - **Scanned PDFs are rejected with a clear message**, not OCR'd. Textract is the obvious extension.
 

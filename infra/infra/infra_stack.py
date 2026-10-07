@@ -20,7 +20,7 @@ from constructs import Construct
 
 from infra.bundling import RUNTIME, backend_code
 
-DEFAULT_MODEL_ID = "anthropic.claude-opus-5-5"
+DEFAULT_MODEL_ID = "global.anthropic.claude-sonnet-4-6"
 EMBEDDING_MODEL_ID = "amazon.titan-embed-text-v2:0"
 METRICS_NAMESPACE = "SyllabusAgent"
 
@@ -102,11 +102,24 @@ class InfraStack(Stack):
             self.functions[name] = f
             return f
 
-        claude = iam.PolicyStatement(
-            # Claude in Amazon Bedrock (Messages API endpoint). Scope to model ARNs once you pin one.
-            actions=["bedrock-mantle:CreateInference"],
-            resources=["*"],
-        )
+        if model_id.startswith("anthropic."):
+            claude = iam.PolicyStatement(
+                # Claude in Amazon Bedrock (Messages API endpoint, Opus 4.7 and later)
+                actions=["bedrock-mantle:CreateInference"],
+                resources=["*"],
+            )
+        else:
+            # Cross-region inference profile (e.g. global.anthropic.claude-sonnet-4-6) via InvokeModel:
+            # needs the profile plus the base model in whichever region the request is routed to.
+            base_model = model_id.split(".", 1)[1]
+            claude = iam.PolicyStatement(
+                actions=["bedrock:InvokeModel"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}:{self.account}:inference-profile/{model_id}",
+                    f"arn:aws:bedrock:*::foundation-model/{base_model}",
+                    f"arn:aws:bedrock:::foundation-model/{base_model}",
+                ],
+            )
         titan = iam.PolicyStatement(
             actions=["bedrock:InvokeModel"],
             resources=[f"arn:aws:bedrock:{self.region}::foundation-model/{EMBEDDING_MODEL_ID}"],
