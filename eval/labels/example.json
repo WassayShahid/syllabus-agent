@@ -1,0 +1,11 @@
+{
+  "example": true,
+  "_comment": "Copy to e.g. compsci-3gc3.json, drop the 'example' key, put the PDF in eval/syllabi/. Label every graded item exactly as a careful student would: dueDate null when the outline gives no date.",
+  "pdf": "syllabi/compsci-3gc3.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "Assignment 1", "dueDate": "2026-10-09", "weightPercent": 10},
+    {"title": "Midterm", "dueDate": "2026-10-22", "weightPercent": 25},
+    {"title": "Final exam", "dueDate": null, "weightPercent": 40}
+  ]
+}

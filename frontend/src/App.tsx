@@ -1,0 +1,45 @@
+import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
+import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import Ask from "./pages/Ask";
+import Courses from "./pages/Courses";
+import Deadlines from "./pages/Deadlines";
+
+function Shell() {
+  const { user, signOut } = useAuthenticator((ctx) => [ctx.user]);
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <span className="brand">Syllabus Agent</span>
+        <nav>
+          <NavLink to="/" end>Deadlines</NavLink>
+          <NavLink to="/courses">Courses</NavLink>
+          <NavLink to="/ask">Ask</NavLink>
+        </nav>
+        <span className="who">
+          {user?.signInDetails?.loginId}
+          <button className="link" onClick={signOut}>Sign out</button>
+        </span>
+      </header>
+      <main>
+        <Routes>
+          <Route path="/" element={<Deadlines />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/ask" element={<Ask />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+export default function App() {
+  const { authStatus } = useAuthenticator((ctx) => [ctx.authStatus]);
+  if (authStatus === "authenticated") return <Shell />;
+  return (
+    <div className="login">
+      <h1>Syllabus Agent</h1>
+      <p className="muted">Upload your course outlines. Get every deadline in one place.</p>
+      <Authenticator signUpAttributes={["email"]} />
+    </div>
+  );
+}

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# real course outlines may be copyrighted; keep them local (labels + results are fine to commit)
+eval/syllabi/

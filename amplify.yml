@@ -1,0 +1,21 @@
+# Amplify Hosting build spec (monorepo: the app lives in frontend/).
+# In the Amplify console set AMPLIFY_MONOREPO_APP_ROOT=frontend plus the VITE_* variables
+# from frontend/.env.example, and add the SPA rewrite described in the README.
+version: 1
+applications:
+  - appRoot: frontend
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: dist
+        files:
+          - "**/*"
+      cache:
+        paths:
+          - node_modules/**/*
