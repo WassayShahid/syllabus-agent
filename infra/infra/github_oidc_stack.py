@@ -1,6 +1,10 @@
 """Deploy once by hand: lets GitHub Actions on `main` assume a role via OIDC (no long-lived keys).
 
 The role can only assume the CDK bootstrap roles, which is all `cdk deploy` needs.
+
+A job that declares `environment: <name>` presents the subject `repo:<repo>:environment:<name>`
+instead of `repo:<repo>:ref:refs/heads/<branch>`, so both forms are trusted. Restrict the
+environment to `main` in GitHub (Settings > Environments > Deployment branches).
 """
 from aws_cdk import CfnOutput, Duration, Stack
 from aws_cdk import aws_iam as iam
@@ -8,7 +12,8 @@ from constructs import Construct
 
 
 class GithubOidcStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, *, repo: str, branch: str = "main", **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, *, repo: str, branch: str = "main",
+                 environment: str = "production", **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         provider = iam.OpenIdConnectProvider(
@@ -22,7 +27,10 @@ class GithubOidcStack(Stack):
                 provider.open_id_connect_provider_arn,
                 conditions={
                     "StringEquals": {"token.actions.githubusercontent.com:aud": "sts.amazonaws.com"},
-                    "StringLike": {"token.actions.githubusercontent.com:sub": f"repo:{repo}:ref:refs/heads/{branch}"},
+                    "StringLike": {"token.actions.githubusercontent.com:sub": [
+                        f"repo:{repo}:ref:refs/heads/{branch}",
+                        f"repo:{repo}:environment:{environment}",
+                    ]},
                 },
             ),
             max_session_duration=Duration.hours(1),
