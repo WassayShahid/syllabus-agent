@@ -7,8 +7,6 @@ The tool schema is the contract.
 
 Output: {"courseCode", "courseTitle", "deadlines": [...]} under $.extraction
 """
-import json
-
 from extract_text import load_pages
 from lib import llm
 
@@ -146,7 +144,7 @@ def parse_tool_call(response):
     call = next((b for b in response.content if b.type == "tool_use" and b.name == TOOL_NAME), None)
     if call is None:
         raise ExtractionFormatError(f"Model did not call {TOOL_NAME} (stop_reason={response.stop_reason})")
-    data = call.input if isinstance(call.input, dict) else json.loads(call.input)
+    data = call.input           # the SDK parses tool input into a dict
     deadlines = data.get("deadlines")
     return {
         "courseCode": data.get("courseCode"),

@@ -250,17 +250,16 @@ class InfraStack(Stack):
             methods=[apigw.HttpMethod.GET],
             integration=HttpLambdaIntegration("HealthIntegration", health_fn),
         )
-        protected = [
-            ("/uploads", [apigw.HttpMethod.POST], uploads_fn),
-            ("/syllabi", [apigw.HttpMethod.GET], api_fn),
-            ("/syllabi/{id}", [apigw.HttpMethod.GET, apigw.HttpMethod.DELETE], api_fn),
-            ("/deadlines", [apigw.HttpMethod.GET], api_fn),
-            ("/ask", [apigw.HttpMethod.POST], ask_fn),
-        ]
-        integrations = {}
-        for path, methods, f in protected:
-            integration = integrations.setdefault(
-                f.node.id, HttpLambdaIntegration(f"{f.node.id}Integration", f))
+        uploads_integration = HttpLambdaIntegration("UploadsFnIntegration", uploads_fn)
+        api_integration = HttpLambdaIntegration("ApiFnIntegration", api_fn)
+        ask_integration = HttpLambdaIntegration("AskFnIntegration", ask_fn)
+        for path, methods, integration in [
+            ("/uploads", [apigw.HttpMethod.POST], uploads_integration),
+            ("/syllabi", [apigw.HttpMethod.GET], api_integration),
+            ("/syllabi/{id}", [apigw.HttpMethod.GET, apigw.HttpMethod.DELETE], api_integration),
+            ("/deadlines", [apigw.HttpMethod.GET], api_integration),
+            ("/ask", [apigw.HttpMethod.POST], ask_integration),
+        ]:
             api.add_routes(path=path, methods=methods, integration=integration, authorizer=authorizer)
 
         # ---------------- monitoring ----------------
