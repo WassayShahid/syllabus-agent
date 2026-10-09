@@ -141,16 +141,21 @@ def test_lambdas_get_table_and_bucket_env(template):
     })
 
 
-def test_github_role_trusts_main_branch_and_production_environment():
+def test_github_role_trusts_exact_subjects_in_both_formats():
     app = core.App()
-    stack = GithubOidcStack(app, "oidc", repo="me/repo")
+    stack = GithubOidcStack(app, "oidc", repo="me/repo", owner_id=11, repo_id=22)
     assertions.Template.from_stack(stack).has_resource_properties("AWS::IAM::Role", {
         "AssumeRolePolicyDocument": {"Statement": [Match.object_like({
-            "Condition": Match.object_like({
-                "StringLike": {"token.actions.githubusercontent.com:sub": [
-                    "repo:me/repo:ref:refs/heads/main",
-                    "repo:me/repo:environment:production",
-                ]},
-            }),
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                    "token.actions.githubusercontent.com:sub": [
+                        "repo:me/repo:ref:refs/heads/main",
+                        "repo:me/repo:environment:production",
+                        "repo:me@11/repo@22:ref:refs/heads/main",
+                        "repo:me@11/repo@22:environment:production",
+                    ],
+                },
+            },
         })]},
     })
