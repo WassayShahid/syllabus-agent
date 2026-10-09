@@ -1,19 +1,14 @@
 """API Gateway (HTTP API, payload v2) helpers."""
 import json
-from decimal import Decimal
 
-
-def _default(o):
-    if isinstance(o, Decimal):
-        return int(o) if o == o.to_integral_value() else float(o)
-    raise TypeError(f"not serializable: {type(o)}")
+from lib.db import plain
 
 
 def response(status, body):
     return {
         "statusCode": status,
         "headers": {"Content-Type": "application/json"},
-        "body": json.dumps(body, default=_default),
+        "body": json.dumps(plain(body)),
     }
 
 

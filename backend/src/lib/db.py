@@ -47,6 +47,16 @@ def get_meta(syllabus_id):
     return aws.table().get_item(Key={"pk": syllabus_pk(syllabus_id), "sk": "META"}).get("Item")
 
 
+def update_meta(syllabus_id, **fields):
+    """SET the given attributes on a syllabus' META item (names are aliased, so reserved words are fine)."""
+    aws.table().update_item(
+        Key={"pk": syllabus_pk(syllabus_id), "sk": "META"},
+        UpdateExpression="SET " + ", ".join(f"#{k} = :{k}" for k in fields),
+        ExpressionAttributeNames={f"#{k}": k for k in fields},
+        ExpressionAttributeValues={f":{k}": v for k, v in fields.items()},
+    )
+
+
 def get_owned_meta(syllabus_id, user_id):
     meta = get_meta(syllabus_id)
     return meta if meta and meta.get("ownerId") == user_id else None

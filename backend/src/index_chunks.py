@@ -2,11 +2,14 @@
 
 Output: {"chunkCount": n} under $.indexed
 """
+from concurrent.futures import ThreadPoolExecutor
+
 from extract_text import load_pages
 from lib import aws, db, vectors
 
 CHUNK_CHARS = 1200
 OVERLAP_CHARS = 200
+EMBED_WORKERS = 8           # stays well under Titan's default request quota
 
 
 def chunk_pages(pages, size=CHUNK_CHARS, overlap=OVERLAP_CHARS):
@@ -36,12 +39,15 @@ def chunk_pages(pages, size=CHUNK_CHARS, overlap=OVERLAP_CHARS):
 
 def handler(event, context):
     syllabus_id = event["syllabusId"]
-    pages = load_pages(event["bucket"], event["text"]["textKey"])
-    chunks = chunk_pages(pages)
+    chunks = chunk_pages(load_pages(event["bucket"], event["text"]["textKey"]))
+
+    # Embedding calls are independent network round-trips; run them concurrently (boto3 clients are thread-safe).
+    with ThreadPoolExecutor(max_workers=EMBED_WORKERS) as pool:
+        embeddings = list(pool.map(lambda c: vectors.embed(c["text"], operation="index_chunks"), chunks))
 
     db.delete_items(syllabus_id, "CHUNK#")
     with aws.table().batch_writer() as batch:
-        for n, chunk in enumerate(chunks, start=1):
+        for n, (chunk, embedding) in enumerate(zip(chunks, embeddings), start=1):
             batch.put_item(Item={
                 "pk": db.syllabus_pk(syllabus_id),
                 "sk": f"CHUNK#{n:04d}",
@@ -49,6 +55,6 @@ def handler(event, context):
                 "filename": event.get("filename", ""),
                 "page": chunk["page"],
                 "text": chunk["text"],
-                "embedding": vectors.pack(vectors.embed(chunk["text"], operation="index_chunks")),
+                "embedding": vectors.pack(embedding),
             })
     return {"chunkCount": len(chunks)}
