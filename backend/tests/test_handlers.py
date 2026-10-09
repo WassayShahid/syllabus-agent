@@ -39,12 +39,12 @@ def test_mark_failed_uses_user_facing_message(fake_table):
     cause = json.dumps({"errorMessage": "No selectable text found. Is this a scanned PDF?"})
     mark_failed.handler({"syllabusId": "s1", "error": {"Error": "NoTextError", "Cause": cause}}, None)
     values = fake_table.updates[0]["ExpressionAttributeValues"]
-    assert values[":s"] == "FAILED" and values[":e"].startswith("No selectable text")
+    assert values[":status"] == "FAILED" and values[":error"].startswith("No selectable text")
 
 
 def test_mark_failed_friendly_for_known_errors(fake_table):
     mark_failed.handler({"syllabusId": "s1", "error": {"Error": "RetryableModelError", "Cause": "{}"}}, None)
-    assert "busy" in fake_table.updates[0]["ExpressionAttributeValues"][":e"]
+    assert "busy" in fake_table.updates[0]["ExpressionAttributeValues"][":error"]
 
 
 def test_mark_failed_without_syllabus_id_does_not_write(fake_table):
