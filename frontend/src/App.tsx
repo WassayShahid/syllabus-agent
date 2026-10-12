@@ -3,6 +3,7 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import Ask from "./pages/Ask";
 import Courses from "./pages/Courses";
 import Deadlines from "./pages/Deadlines";
+import Settings from "./pages/Settings";
 
 function Shell() {
   const { user, signOut } = useAuthenticator((ctx) => [ctx.user]);
@@ -14,6 +15,7 @@ function Shell() {
           <NavLink to="/" end>Deadlines</NavLink>
           <NavLink to="/courses">Courses</NavLink>
           <NavLink to="/ask">Ask</NavLink>
+          <NavLink to="/settings">Settings</NavLink>
         </nav>
         <span className="who">
           {user?.signInDetails?.loginId}
@@ -25,6 +27,7 @@ function Shell() {
           <Route path="/" element={<Deadlines />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/ask" element={<Ask />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

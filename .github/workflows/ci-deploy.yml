@@ -85,4 +85,6 @@ jobs:
           pip install -r requirements.txt
           npm install -g aws-cdk
           cdk deploy SyllabusAgentStack --require-approval never \
-            ${{ vars.ALARM_EMAIL && format('--context alarmEmail={0}', vars.ALARM_EMAIL) || '' }}
+            ${{ vars.ALARM_EMAIL && format('--context alarmEmail={0}', vars.ALARM_EMAIL) || '' }} \
+            ${{ vars.NOTIFY_FROM_EMAIL && format('--context notifyFromEmail={0}', vars.NOTIFY_FROM_EMAIL) || '' }} \
+            ${{ vars.APP_URL && format('--context appUrl={0}', vars.APP_URL) || '' }}

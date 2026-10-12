@@ -1,0 +1,16 @@
+{
+  "_note": "No dates in this outline. 'Four assignments, each worth 7%' is labelled as four items (same convention as MATH 2UU3's two 22% tests). Project milestone weights are % of the 30% project (25/30/45), converted to % of the final grade.",
+  "pdf": "../syllabus/Syllabus 4AL3 2026 Fall.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "Assignment 1", "dueDate": null, "weightPercent": 7},
+    {"title": "Assignment 2", "dueDate": null, "weightPercent": 7},
+    {"title": "Assignment 3", "dueDate": null, "weightPercent": 7},
+    {"title": "Assignment 4", "dueDate": null, "weightPercent": 7},
+    {"title": "Midterm", "dueDate": null, "weightPercent": 21},
+    {"title": "Final exam", "dueDate": null, "weightPercent": 21},
+    {"title": "Project proposal", "dueDate": null, "weightPercent": 7.5},
+    {"title": "Project building your system", "dueDate": null, "weightPercent": 9},
+    {"title": "Project final report", "dueDate": null, "weightPercent": 13.5}
+  ]
+}

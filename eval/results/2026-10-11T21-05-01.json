@@ -1,0 +1,415 @@
+{
+  "model": "global.anthropic.claude-sonnet-4-6",
+  "summary": {
+    "labeled": 33,
+    "predicted": 33,
+    "matched": 33,
+    "correct": 33,
+    "dateCorrect": 33,
+    "weightCorrect": 33,
+    "accuracy": 100.0,
+    "recall": 100.0,
+    "precision": 100.0,
+    "dateAccuracy": 100.0,
+    "weightAccuracy": 100.0
+  },
+  "perFile": {
+    "compsci-3gc3": {
+      "labeled": 7,
+      "predicted": 7,
+      "matched": 7,
+      "correct": 7,
+      "dateCorrect": 7,
+      "weightCorrect": 7,
+      "missed": [],
+      "extra": [],
+      "wrong": []
+    },
+    "compsci-4al3": {
+      "labeled": 9,
+      "predicted": 9,
+      "matched": 9,
+      "correct": 9,
+      "dateCorrect": 9,
+      "weightCorrect": 9,
+      "missed": [],
+      "extra": [],
+      "wrong": []
+    },
+    "compsci-4ml3": {
+      "labeled": 6,
+      "predicted": 6,
+      "matched": 6,
+      "correct": 6,
+      "dateCorrect": 6,
+      "weightCorrect": 6,
+      "missed": [],
+      "extra": [],
+      "wrong": []
+    },
+    "compsci-4zp6": {
+      "labeled": 7,
+      "predicted": 7,
+      "matched": 7,
+      "correct": 7,
+      "dateCorrect": 7,
+      "weightCorrect": 7,
+      "missed": [],
+      "extra": [],
+      "wrong": []
+    },
+    "math-2uu3": {
+      "labeled": 4,
+      "predicted": 4,
+      "matched": 4,
+      "correct": 4,
+      "dateCorrect": 4,
+      "weightCorrect": 4,
+      "missed": [],
+      "extra": [],
+      "wrong": []
+    }
+  },
+  "predictions": {
+    "compsci-3gc3": [
+      {
+        "title": "A1 Transformation",
+        "type": "assignment",
+        "dueDate": "2026-10-09",
+        "dueTime": null,
+        "week": 5,
+        "dateApproximate": false,
+        "weightPercent": 6,
+        "page": 5
+      },
+      {
+        "title": "Midterm Exam",
+        "type": "midterm",
+        "dueDate": "2026-10-27",
+        "dueTime": null,
+        "week": 8,
+        "dateApproximate": false,
+        "weightPercent": 26,
+        "page": 4
+      },
+      {
+        "title": "A2 Mesh",
+        "type": "assignment",
+        "dueDate": "2026-11-13",
+        "dueTime": null,
+        "week": 10,
+        "dateApproximate": false,
+        "weightPercent": 6,
+        "page": 5
+      },
+      {
+        "title": "A3 Color",
+        "type": "assignment",
+        "dueDate": "2026-11-27",
+        "dueTime": null,
+        "week": 12,
+        "dateApproximate": false,
+        "weightPercent": 6,
+        "page": 5
+      },
+      {
+        "title": "A4",
+        "type": "assignment",
+        "dueDate": "2026-12-10",
+        "dueTime": null,
+        "week": 14,
+        "dateApproximate": false,
+        "weightPercent": 6,
+        "page": 5
+      },
+      {
+        "title": "Course Participation",
+        "type": "participation",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 4
+      },
+      {
+        "title": "Final Exam",
+        "type": "final_exam",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 45,
+        "page": 4
+      }
+    ],
+    "compsci-4al3": [
+      {
+        "title": "Assignment 1",
+        "type": "assignment",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 7,
+        "page": 2
+      },
+      {
+        "title": "Assignment 2",
+        "type": "assignment",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 7,
+        "page": 2
+      },
+      {
+        "title": "Assignment 3",
+        "type": "assignment",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 7,
+        "page": 2
+      },
+      {
+        "title": "Assignment 4",
+        "type": "assignment",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 7,
+        "page": 2
+      },
+      {
+        "title": "Final Exam",
+        "type": "final_exam",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 21,
+        "page": 2
+      },
+      {
+        "title": "Group Project Milestone 1: Proposal",
+        "type": "project",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 7.5,
+        "page": 3
+      },
+      {
+        "title": "Group Project Milestone 2: Building Your System",
+        "type": "project",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 9,
+        "page": 3
+      },
+      {
+        "title": "Group Project Milestone 3: Final Report",
+        "type": "project",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 13.5,
+        "page": 3
+      },
+      {
+        "title": "Midterm",
+        "type": "midterm",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 21,
+        "page": 2
+      }
+    ],
+    "compsci-4ml3": [
+      {
+        "title": "Assignment 1 (A1)",
+        "type": "assignment",
+        "dueDate": "2026-10-11",
+        "dueTime": null,
+        "week": 5,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 1
+      },
+      {
+        "title": "Midterm Exam",
+        "type": "midterm",
+        "dueDate": "2026-10-28",
+        "dueTime": "16:30",
+        "week": 8,
+        "dateApproximate": false,
+        "weightPercent": 25,
+        "page": 1
+      },
+      {
+        "title": "Assignment 2 (A2)",
+        "type": "assignment",
+        "dueDate": "2026-11-13",
+        "dueTime": null,
+        "week": 10,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 1
+      },
+      {
+        "title": "Assignment 3 (A3)",
+        "type": "assignment",
+        "dueDate": "2026-12-03",
+        "dueTime": null,
+        "week": 13,
+        "dateApproximate": false,
+        "weightPercent": 10,
+        "page": 1
+      },
+      {
+        "title": "Final Exam",
+        "type": "final_exam",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 35,
+        "page": 1
+      },
+      {
+        "title": "Participation and popup Quizzes",
+        "type": "quiz",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 20,
+        "page": 1
+      }
+    ],
+    "compsci-4zp6": [
+      {
+        "title": "Team and Project Selection",
+        "type": "project",
+        "dueDate": "2026-09-21",
+        "dueTime": "23:59",
+        "week": 3,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 4
+      },
+      {
+        "title": "Unified SRS and Project Plan Documentation",
+        "type": "project",
+        "dueDate": "2026-10-09",
+        "dueTime": "23:59",
+        "week": 5,
+        "dateApproximate": false,
+        "weightPercent": 15,
+        "page": 4
+      },
+      {
+        "title": "Proof of Concept Demonstration (Two-minute video clip)",
+        "type": "presentation",
+        "dueDate": "2026-11-23",
+        "dueTime": "23:59",
+        "week": 12,
+        "dateApproximate": false,
+        "weightPercent": 10,
+        "page": 4
+      },
+      {
+        "title": "Design and V&V Document",
+        "type": "project",
+        "dueDate": "2027-01-25",
+        "dueTime": "23:59",
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 10,
+        "page": 5
+      },
+      {
+        "title": "Final Demonstration (Two-minute video clip)",
+        "type": "presentation",
+        "dueDate": "2027-04-05",
+        "dueTime": "23:59",
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 5
+      },
+      {
+        "title": "Final Submission (Source code + design doc + user guide + working app + poster PDF)",
+        "type": "project",
+        "dueDate": "2027-04-05",
+        "dueTime": "23:59",
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 50,
+        "page": 5
+      },
+      {
+        "title": "EXPO Demonstration and Poster",
+        "type": "presentation",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 5,
+        "page": 5
+      }
+    ],
+    "math-2uu3": [
+      {
+        "title": "Class participation (in-class activities and online quizzes)",
+        "type": "participation",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 16,
+        "page": 3
+      },
+      {
+        "title": "Final Exam",
+        "type": "final_exam",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 40,
+        "page": 3
+      },
+      {
+        "title": "Term Test 1",
+        "type": "midterm",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 22,
+        "page": 3
+      },
+      {
+        "title": "Term Test 2",
+        "type": "midterm",
+        "dueDate": null,
+        "dueTime": null,
+        "week": null,
+        "dateApproximate": false,
+        "weightPercent": 22,
+        "page": 3
+      }
+    ]
+  }
+}

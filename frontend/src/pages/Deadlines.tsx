@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, Deadline, localToday } from "../api";
+import { api, Deadline, DeadlineInput, localToday, Syllabus } from "../api";
+import DeadlineForm from "../components/DeadlineForm";
 
 type Range = "upcoming" | "all";
 
@@ -10,6 +11,7 @@ const parse = (iso: string) => {
 };
 const fmtDay = (iso: string) =>
   parse(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+const keyOf = (d: Deadline) => `${d.syllabusId}-${d.deadlineId}`;
 
 function weekStart(iso: string) {
   const d = parse(iso);
@@ -26,7 +28,17 @@ function groupByWeek(items: Deadline[]) {
   return [...groups.entries()];
 }
 
-function Row({ d }: { d: Deadline }) {
+interface RowProps {
+  d: Deadline;
+  editing: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (input: DeadlineInput) => Promise<void>;
+  onDelete: () => void;
+}
+
+function Row({ d, editing, onEdit, onCancel, onSave, onDelete }: RowProps) {
+  if (editing) return <li><DeadlineForm initial={d} onSave={onSave} onCancel={onCancel} /></li>;
   return (
     <li className="deadline">
       <span className="when">
@@ -38,12 +50,17 @@ function Row({ d }: { d: Deadline }) {
       <details className="what">
         <summary>
           {d.title} <span className={`type type-${d.type}`}>{d.type.replace("_", " ")}</span>
+          {d.source && <small className="muted"> {d.source === "manual" ? "added by you" : "edited"}</small>}
         </summary>
         {d.sourceText && (
           <blockquote>
             “{d.sourceText}”{d.page ? <small> (p. {d.page})</small> : null}
           </blockquote>
         )}
+        <div className="row-actions">
+          <button className="link" onClick={onEdit}>Edit</button>
+          <button className="link danger" onClick={onDelete}>Delete</button>
+        </div>
       </details>
       <span className="weight">{d.weightPercent != null ? `${d.weightPercent}%` : ""}</span>
     </li>
@@ -54,15 +71,19 @@ export default function Deadlines() {
   const [range, setRange] = useState<Range>("upcoming");
   const [items, setItems] = useState<Deadline[] | null>(null);
   const [error, setError] = useState("");
+  const [editing, setEditing] = useState<string | null>(null);
+  const [adding, setAdding] = useState<Syllabus[] | null>(null);   // courses to choose from while adding
+
+  const load = useCallback(
+    () => api.listDeadlines(range === "upcoming" ? 14 : undefined).then((r) => setItems(r.deadlines)),
+    [range],
+  );
 
   useEffect(() => {
     setItems(null);
     setError("");
-    api
-      .listDeadlines(range === "upcoming" ? 14 : undefined)
-      .then((r) => setItems(r.deadlines))
-      .catch((e) => setError(e.message));
-  }, [range]);
+    load().catch((e) => setError(e.message));
+  }, [load]);
 
   const { dated, undated, total } = useMemo(() => {
     const all = items ?? [];
@@ -71,22 +92,64 @@ export default function Deadlines() {
     return { dated, undated: all.filter((d) => !d.dueDate), total };
   }, [items]);
 
+  async function startAdding() {
+    setError("");
+    try {
+      const { syllabi } = await api.listSyllabi();
+      const ready = syllabi.filter((s) => s.status === "READY");
+      if (ready.length === 0) setError("Upload a course outline first; deadlines are added to a course.");
+      else setAdding(ready);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  async function addDeadline(input: DeadlineInput, syllabusId?: string) {
+    await api.addDeadline(syllabusId!, input);
+    setAdding(null);
+    await load();
+  }
+
+  async function saveEdit(d: Deadline, input: DeadlineInput) {
+    await api.updateDeadline(d, input);
+    setEditing(null);
+    await load();
+  }
+
+  async function remove(d: Deadline) {
+    if (!confirm(`Delete "${d.title}"?`)) return;
+    try {
+      await api.deleteDeadline(d);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  const row = (d: Deadline) => (
+    <Row key={keyOf(d)} d={d} editing={editing === keyOf(d)} onEdit={() => setEditing(keyOf(d))}
+         onCancel={() => setEditing(null)} onSave={(input) => saveEdit(d, input)} onDelete={() => remove(d)} />
+  );
   const today = localToday();
 
   return (
     <section>
       <div className="page-head">
         <h1>Deadlines</h1>
-        <div className="segmented">
-          <button className={range === "upcoming" ? "on" : ""} onClick={() => setRange("upcoming")}>Next 14 days</button>
-          <button className={range === "all" ? "on" : ""} onClick={() => setRange("all")}>Whole term</button>
+        <div className="head-actions">
+          <button className="secondary" onClick={startAdding} disabled={!!adding}>+ Add deadline</button>
+          <div className="segmented">
+            <button className={range === "upcoming" ? "on" : ""} onClick={() => setRange("upcoming")}>Next 14 days</button>
+            <button className={range === "all" ? "on" : ""} onClick={() => setRange("all")}>Whole term</button>
+          </div>
         </div>
       </div>
 
+      {adding && <DeadlineForm courses={adding} onSave={addDeadline} onCancel={() => setAdding(null)} />}
       {error && <p className="error">{error}</p>}
       {items === null && !error && <p className="muted">Loading…</p>}
 
-      {items && items.length === 0 && (
+      {items && items.length === 0 && !adding && (
         <div className="empty">
           <p>{range === "upcoming" ? "Nothing due in the next two weeks." : "No deadlines yet."}</p>
           <Link to="/courses">Upload a course outline →</Link>
@@ -103,14 +166,14 @@ export default function Deadlines() {
             Week of {new Date(week).toLocaleDateString(undefined, { month: "long", day: "numeric" })}
             {list.some((d) => d.dueDate! < today) && <small className="muted"> (includes past)</small>}
           </h2>
-          <ul>{list.map((d, i) => <Row key={`${d.syllabusId}-${d.title}-${i}`} d={d} />)}</ul>
+          <ul>{list.map(row)}</ul>
         </div>
       ))}
 
       {range === "all" && undated.length > 0 && (
         <div className="week">
           <h2>Date not stated</h2>
-          <ul>{undated.map((d, i) => <Row key={`${d.syllabusId}-${d.title}-${i}`} d={d} />)}</ul>
+          <ul>{undated.map(row)}</ul>
         </div>
       )}
     </section>

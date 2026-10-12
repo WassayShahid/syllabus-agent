@@ -2,14 +2,7 @@
 
 Output: {"deadlineCount": n} under $.saved
 """
-from decimal import Decimal
-
 from lib import aws, db
-
-
-def _dynamo(value):
-    """DynamoDB rejects Python floats."""
-    return Decimal(str(value)) if isinstance(value, float) else value
 
 
 def handler(event, context):
@@ -20,15 +13,7 @@ def handler(event, context):
     db.delete_items(syllabus_id, "DEADLINE#")
     with aws.table().batch_writer() as batch:
         for n, d in enumerate(validated["deadlines"], start=1):
-            batch.put_item(Item={
-                "pk": db.syllabus_pk(syllabus_id),
-                "sk": f"DEADLINE#{n:03d}",
-                "gsi1pk": db.user_pk(event["ownerId"]),
-                "gsi1sk": db.deadline_gsi_sk(syllabus_id, n, d["dueDate"]),
-                "syllabusId": syllabus_id,
-                "courseCode": course_code,
-                **{k: _dynamo(v) for k, v in d.items() if v is not None},
-            })
+            batch.put_item(Item=db.deadline_item(syllabus_id, event["ownerId"], n, d, course_code))
 
     db.update_meta(
         syllabus_id,

@@ -1,7 +1,9 @@
 """Match predicted deadlines to hand labels and compute accuracy.
 
-A prediction *matches* a label when titles are similar (same date makes a looser title match ok).
-A matched deadline is *correct* when its date and weight are both right; that's the headline number.
+A prediction *matches* a label when the titles are similar (one title's words all appear in the
+other, e.g. "A1" vs "Assignment 1 (A1)", counts as similar), or when both have the same due date
+and the same non-zero weight. A matched deadline is *correct* when its date and weight are both
+right; that's the headline number.
 """
 import re
 from difflib import SequenceMatcher
@@ -15,7 +17,14 @@ def _norm(title):
 
 
 def similarity(a, b):
-    return SequenceMatcher(None, _norm(a), _norm(b)).ratio()
+    na, nb = _norm(a), _norm(b)
+    da, db = set(re.findall(r"\d+", na)), set(re.findall(r"\d+", nb))
+    if da and db and da != db:                     # "Assignment 2" is never "Assignment 1"
+        return 0.0
+    ta, tb = set(na.split()), set(nb.split())
+    if ta and tb and (ta <= tb or tb <= ta):       # one title's words all appear in the other
+        return 1.0
+    return SequenceMatcher(None, na, nb).ratio()
 
 
 def _weight_ok(label, pred):
@@ -32,7 +41,9 @@ def match(labels, preds):
         for pi, pred in enumerate(preds):
             sim = similarity(label["title"], pred["title"])
             same_date = label.get("dueDate") == pred.get("dueDate")
-            if sim >= (SAME_DATE_TITLE_THRESHOLD if same_date else ANY_DATE_TITLE_THRESHOLD):
+            # same date + same non-zero weight is the same deliverable, however it's titled
+            same_slot = same_date and label.get("dueDate") and _weight_ok(label, pred) and label.get("weightPercent")
+            if same_slot or sim >= (SAME_DATE_TITLE_THRESHOLD if same_date else ANY_DATE_TITLE_THRESHOLD):
                 candidates.append((same_date, sim, li, pi))
     candidates.sort(reverse=True)            # same-date pairs first, then by title similarity
     used_l, used_p, pairs = set(), set(), {}

@@ -1,0 +1,13 @@
+{
+  "pdf": "../syllabus/COMPSCI 3GC3_SFWRENG 3GC3 - Yingying Wang_ Fall.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "Course participation", "dueDate": null, "weightPercent": 5},
+    {"title": "A1 transformation", "dueDate": "2026-10-09", "weightPercent": 6},
+    {"title": "Midterm exam", "dueDate": "2026-10-27", "weightPercent": 26},
+    {"title": "A2 mesh", "dueDate": "2026-11-13", "weightPercent": 6},
+    {"title": "A3 color", "dueDate": "2026-11-27", "weightPercent": 6},
+    {"title": "A4", "dueDate": "2026-12-10", "weightPercent": 6},
+    {"title": "Final exam", "dueDate": null, "weightPercent": 45}
+  ]
+}

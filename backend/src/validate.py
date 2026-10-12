@@ -131,5 +131,41 @@ def validate(extraction, term_start=None):
     }
 
 
+USER_FIELDS = ("title", "type", "dueDate", "dueTime", "weightPercent")
+
+
+def clean_user_deadline(raw):
+    """Validate a deadline a user typed in. Returns (deadline, error_message).
+
+    Same rules as model output, but strict: bad input is rejected instead of silently dropped.
+    Empty strings / nulls clear the optional fields.
+    """
+    def given(key):
+        return raw.get(key) not in (None, "")
+
+    title = str(raw.get("title") or "").strip()[:MAX_TITLE]
+    if not title:
+        return None, "title is required"
+    kind = raw.get("type") or "other"
+    if kind not in DEADLINE_TYPES:
+        return None, f"type must be one of: {', '.join(DEADLINE_TYPES)}"
+    due = _parse_date(raw.get("dueDate"))
+    if given("dueDate") and due is None:
+        return None, "dueDate must be YYYY-MM-DD"
+    due_time = _parse_time(raw.get("dueTime"))
+    if given("dueTime") and due_time is None:
+        return None, "dueTime must be HH:MM (24h)"
+    weight = _number(raw.get("weightPercent"))
+    if given("weightPercent") and (weight is None or not 0 <= weight <= 100):
+        return None, "weightPercent must be a number from 0 to 100"
+    return {
+        "title": title,
+        "type": kind,
+        "dueDate": due.isoformat() if due else None,
+        "dueTime": due_time,
+        "weightPercent": round(weight, 2) if weight is not None else None,
+    }, None
+
+
 def handler(event, context):
     return validate(event["extraction"], event.get("termStart"))

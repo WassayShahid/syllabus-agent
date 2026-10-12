@@ -83,7 +83,9 @@ def test_routes_exist_and_are_protected(template):
         "RouteKey": "GET /health", "AuthorizationType": "NONE",
     })
     for key in ("POST /uploads", "GET /syllabi", "GET /syllabi/{id}", "DELETE /syllabi/{id}",
-                "GET /deadlines", "POST /ask"):
+                "POST /syllabi/{id}/deadlines", "PATCH /syllabi/{id}/deadlines/{n}",
+                "DELETE /syllabi/{id}/deadlines/{n}", "GET /deadlines", "GET /settings", "PUT /settings",
+                "POST /settings/test-email", "POST /ask"):
         template.has_resource_properties("AWS::ApiGatewayV2::Route", {"RouteKey": key, "AuthorizationType": "JWT"})
 
 
@@ -111,6 +113,25 @@ def test_llm_lambdas_get_model_and_bedrock_permissions(template):
                 ]),
             }),
         ])},
+    })
+
+
+def test_reminders_off_without_sender(template):
+    template.resource_count_is("AWS::SES::EmailIdentity", 0)
+    assert not template.find_resources("AWS::Lambda::Function", {"Properties": {"Handler": "notify_daily.handler"}})
+
+
+def test_reminders_with_sender_get_identity_daily_schedule_and_send_permission():
+    app = core.App(context={"aws:cdk:bundling-stacks": [], "notifyFromEmail": "me@example.com"})
+    template = assertions.Template.from_stack(InfraStack(app, "notify"))
+    template.has_resource_properties("AWS::SES::EmailIdentity", {"EmailIdentity": "me@example.com"})
+    template.has_resource_properties("AWS::Lambda::Function", {
+        "Handler": "notify_daily.handler",
+        "Environment": {"Variables": Match.object_like({"NOTIFY_FROM_EMAIL": "me@example.com", "SES_SANDBOX": "true"})},
+    })
+    template.has_resource_properties("AWS::Events::Rule", {"ScheduleExpression": "cron(0 12 * * ? *)"})
+    template.has_resource_properties("AWS::IAM::Policy", {
+        "PolicyDocument": {"Statement": Match.array_with([Match.object_like({"Action": "ses:SendEmail"})])},
     })
 
 

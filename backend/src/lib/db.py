@@ -5,8 +5,10 @@
   SYLLABUS#<id>       DEADLINE#<nnn>   USER#<sub>      DUE#<yyyy-mm-dd>#<id>#<nnn>   (dated)
                                                        UNDATED#<id>#<nnn>            (no date found)
   SYLLABUS#<id>       CHUNK#<nnnn>     -               -
+  USER#<sub>          SETTINGS         NOTIFY          USER#<sub>    (only while email reminders are on)
 
-The GSI answers the two per-user questions: "my syllabi" and "what's due between A and B".
+The GSI answers the per-user questions ("my syllabi", "what's due between A and B") and lists
+everyone who wants reminder emails.
 """
 from decimal import Decimal
 
@@ -15,6 +17,25 @@ from boto3.dynamodb.conditions import Key
 from lib import aws
 
 GSI = "gsi1"
+NOTIFY_PK = "NOTIFY"
+
+
+def _dynamo(value):
+    """DynamoDB rejects Python floats."""
+    return Decimal(str(value)) if isinstance(value, float) else value
+
+
+def deadline_item(syllabus_id, owner, n, deadline, course_code):
+    """Full DynamoDB item for deadline number n. Used by the pipeline and by manual edits."""
+    return {
+        "pk": syllabus_pk(syllabus_id),
+        "sk": f"DEADLINE#{n:03d}",
+        "gsi1pk": user_pk(owner),
+        "gsi1sk": deadline_gsi_sk(syllabus_id, n, deadline.get("dueDate")),
+        "syllabusId": syllabus_id,
+        "courseCode": course_code,
+        **{k: _dynamo(v) for k, v in deadline.items() if v is not None},
+    }
 
 
 def syllabus_pk(syllabus_id):
@@ -118,8 +139,32 @@ def plain(value):
 def public_deadline(item):
     """Strip key attributes before returning to clients / the model."""
     keep = ("syllabusId", "courseCode", "title", "type", "dueDate", "dueTime", "weightPercent",
-            "dateApproximate", "week", "sourceText", "page")
-    return {k: plain(item[k]) for k in keep if k in item and item[k] is not None}
+            "dateApproximate", "week", "sourceText", "page", "source")
+    out = {k: plain(item[k]) for k in keep if k in item and item[k] is not None}
+    if "sk" in item:
+        out["deadlineId"] = item["sk"].split("#", 1)[1]
+    return out
+
+
+# ---- notification settings ----
+DEFAULT_SETTINGS = {"emailEnabled": False, "daysAhead": 3}
+
+
+def get_settings(user_id):
+    item = aws.table().get_item(Key={"pk": user_pk(user_id), "sk": "SETTINGS"}).get("Item") or {}
+    return {**DEFAULT_SETTINGS, **{k: plain(item[k]) for k in ("emailEnabled", "daysAhead", "email") if k in item}}
+
+
+def put_settings(user_id, email, enabled, days_ahead, updated_at):
+    item = {"pk": user_pk(user_id), "sk": "SETTINGS", "userId": user_id, "email": email,
+            "emailEnabled": enabled, "daysAhead": days_ahead, "updatedAt": updated_at}
+    if enabled:     # only enabled users appear in the NOTIFY partition the daily job reads
+        item.update(gsi1pk=NOTIFY_PK, gsi1sk=user_pk(user_id))
+    aws.table().put_item(Item=item)
+
+
+def notification_subscribers():
+    return _query_all(IndexName=GSI, KeyConditionExpression=Key("gsi1pk").eq(NOTIFY_PK))
 
 
 def public_syllabus(meta):

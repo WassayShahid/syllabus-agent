@@ -1,0 +1,14 @@
+{
+  "_note": "Full-year course. The 0% 'revision of project descriptions' checkpoint (Sep 28) is not a graded deliverable, so it isn't labelled.",
+  "pdf": "../syllabus/COMP SCI 4ZP6 Course Outline 2026-2027.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "Team and project selection", "dueDate": "2026-09-21", "weightPercent": 5},
+    {"title": "Software Requirement Specification and Project Plan", "dueDate": "2026-10-09", "weightPercent": 15},
+    {"title": "Proof of concept demonstration", "dueDate": "2026-11-23", "weightPercent": 10},
+    {"title": "Design and V&V document", "dueDate": "2027-01-25", "weightPercent": 10},
+    {"title": "Final demonstration", "dueDate": "2027-04-05", "weightPercent": 5},
+    {"title": "Final submission", "dueDate": "2027-04-05", "weightPercent": 50},
+    {"title": "EXPO demonstration and poster", "dueDate": null, "weightPercent": 5}
+  ]
+}

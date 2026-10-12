@@ -12,10 +12,18 @@ def response(status, body):
     }
 
 
+def _claims(event):
+    return event.get("requestContext", {}).get("authorizer", {}).get("jwt", {}).get("claims", {})
+
+
 def user_id(event):
     """Cognito `sub` from the JWT authorizer; None if the route isn't authorized."""
-    claims = (event.get("requestContext", {}).get("authorizer", {}).get("jwt", {}).get("claims", {}))
-    return claims.get("sub")
+    return _claims(event).get("sub")
+
+
+def user_email(event):
+    """Verified sign-in email from the Cognito ID token."""
+    return _claims(event).get("email")
 
 
 def json_body(event):

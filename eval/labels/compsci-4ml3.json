@@ -1,0 +1,13 @@
+{
+  "_note": "Assignment weights come from section 1.6 (5 / 5 / 10), not an even split of the 20%.",
+  "pdf": "../syllabus/outline.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "A1", "dueDate": "2026-10-11", "weightPercent": 5},
+    {"title": "Midterm exam", "dueDate": "2026-10-28", "weightPercent": 25},
+    {"title": "A2", "dueDate": "2026-11-13", "weightPercent": 5},
+    {"title": "A3", "dueDate": "2026-12-03", "weightPercent": 10},
+    {"title": "Participation and popup quizzes", "dueDate": null, "weightPercent": 20},
+    {"title": "Final exam", "dueDate": null, "weightPercent": 35}
+  ]
+}

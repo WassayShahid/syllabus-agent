@@ -1,0 +1,11 @@
+{
+  "_note": "No dates in this outline (schedule lives on Avenue).",
+  "pdf": "../syllabus/MATH 2UU3 C01_LOVRIC Numbers for Life - Simple Syllabus.pdf",
+  "termStart": "2026-09-08",
+  "deadlines": [
+    {"title": "Term test 1", "dueDate": null, "weightPercent": 22},
+    {"title": "Term test 2", "dueDate": null, "weightPercent": 22},
+    {"title": "Class participation", "dueDate": null, "weightPercent": 16},
+    {"title": "Final exam", "dueDate": null, "weightPercent": 40}
+  ]
+}

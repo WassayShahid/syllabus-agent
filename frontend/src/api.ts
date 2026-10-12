@@ -18,8 +18,31 @@ export interface Syllabus {
   createdAt: string;
 }
 
+export const DEADLINE_TYPES = [
+  "assignment", "quiz", "midterm", "final_exam", "project", "lab", "presentation", "participation", "other",
+] as const;
+
+/** The fields a user can set on a deadline. Empty strings clear optional fields. */
+export interface DeadlineInput {
+  title: string;
+  type: string;
+  dueDate: string;
+  dueTime: string;
+  weightPercent: string;
+}
+
+export interface Settings {
+  emailEnabled: boolean;
+  daysAhead: number;
+  email?: string;
+  available: boolean;
+  verificationSent?: boolean;
+}
+
 export interface Deadline {
   syllabusId: string;
+  deadlineId: string;
+  source?: "manual" | "edited";
   courseCode?: string;
   title: string;
   type: string;
@@ -87,6 +110,22 @@ export const api = {
       "GET",
       days ? `/deadlines?days=${days}&today=${localToday()}` : "/deadlines",
     ),
+  addDeadline: (syllabusId: string, input: DeadlineInput) =>
+    request<{ deadline: Deadline }>("POST", `/syllabi/${encodeURIComponent(syllabusId)}/deadlines`, input),
+  updateDeadline: (d: Deadline, input: DeadlineInput) =>
+    request<{ deadline: Deadline }>(
+      "PATCH",
+      `/syllabi/${encodeURIComponent(d.syllabusId)}/deadlines/${d.deadlineId}`,
+      input,
+    ),
+  deleteDeadline: (d: Deadline) =>
+    request<{ deleted: string }>("DELETE", `/syllabi/${encodeURIComponent(d.syllabusId)}/deadlines/${d.deadlineId}`),
+
+  getSettings: () => request<Settings>("GET", "/settings"),
+  saveSettings: (emailEnabled: boolean, daysAhead: number) =>
+    request<Settings>("PUT", "/settings", { emailEnabled, daysAhead }),
+  sendTestEmail: () => request<{ sentTo: string; deadlineCount: number }>("POST", "/settings/test-email"),
+
   ask: (question: string, history: ChatTurn[]) =>
     request<{ answer: string; citations: Citation[]; toolCalls: string[] }>("POST", "/ask", {
       question,

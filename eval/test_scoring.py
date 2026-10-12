@@ -23,6 +23,19 @@ def test_same_date_allows_looser_title():
     assert pairs[0][1] is not None
 
 
+def test_contained_titles_match():
+    pairs = match([d("A1", "2026-10-11", 5)], [d("Assignment 1 (A1)", "2026-10-11", 5)])
+    assert pairs[0][1] is not None
+    assert match([d("Assignment 2")], [d("Assignment 1 (A1)")])[0][1] is None
+
+
+def test_same_date_and_weight_match_despite_different_titles():
+    labels = [d("Final demonstration", "2027-04-05", 5), d("Final submission", "2027-04-05", 50)]
+    preds = [d("Final Submission (code + docs + poster)", "2027-04-05", 50), d("Demo day video", "2027-04-05", 5)]
+    pairs = match(labels, preds)
+    assert [p["weightPercent"] for _, p in pairs] == [5, 50]
+
+
 def test_each_prediction_used_once():
     labels = [d("Lab 1", "2026-09-24"), d("Lab 2", "2026-10-08")]
     s = score(labels, [d("Lab 1", "2026-09-24")])

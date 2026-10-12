@@ -10,6 +10,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_ses as ses
 from aws_cdk import aws_sns as sns
 from aws_cdk import aws_sns_subscriptions as subs
 from aws_cdk import aws_stepfunctions as sfn
@@ -32,6 +33,10 @@ class InfraStack(Stack):
         model_id = self.node.try_get_context("modelId") or DEFAULT_MODEL_ID
         alarm_email = self.node.try_get_context("alarmEmail")
         allowed_origins = self.node.try_get_context("allowedOrigins") or ["*"]
+        # Email reminders are off unless a sender address is given (AWS emails it a verification link)
+        notify_from = self.node.try_get_context("notifyFromEmail")
+        ses_sandbox = str(self.node.try_get_context("sesSandbox") or "true").lower()
+        app_url = self.node.try_get_context("appUrl") or ""
 
         # ---------------- storage ----------------
         # Private bucket: uploads/<id>.pdf from the browser, text/<id>.json from the pipeline
@@ -134,10 +139,34 @@ class InfraStack(Stack):
         table.grant_write_data(uploads_fn)
 
         # GET /syllabi, GET|DELETE /syllabi/{id}, GET /deadlines
-        api_fn = fn("ApiFn", "api.handler", timeout=15)
+        notify_env = {"NOTIFY_FROM_EMAIL": notify_from or "", "SES_SANDBOX": ses_sandbox, "APP_URL": app_url,
+                      "NOTIFY_TIMEZONE": "America/Toronto"}
+        send_email = iam.PolicyStatement(
+            actions=["ses:SendEmail"],
+            resources=[f"arn:aws:ses:{self.region}:{self.account}:identity/*"],
+        )
+
+        # syllabi, deadline edits, reminder settings
+        api_fn = fn("ApiFn", "api.handler", timeout=15, env=notify_env)
         table.grant_read_write_data(api_fn)
         uploads.grant_delete(api_fn, "uploads/*")
         uploads.grant_delete(api_fn, "text/*")
+        api_fn.add_to_role_policy(send_email)           # "send test email"
+        api_fn.add_to_role_policy(iam.PolicyStatement(  # sandbox: ask AWS to verify a recipient
+            actions=["ses:VerifyEmailIdentity", "ses:GetIdentityVerificationAttributes"],
+            resources=["*"],
+        ))
+
+        if notify_from:
+            ses.EmailIdentity(self, "NotifySender", identity=ses.Identity.email(notify_from))
+            notify_fn = fn("NotifyDailyFn", "notify_daily.handler", timeout=300, env=notify_env)
+            table.grant_read_data(notify_fn)
+            notify_fn.add_to_role_policy(send_email)
+            events.Rule(
+                self, "DailyReminderSchedule",
+                schedule=events.Schedule.cron(minute="0", hour="12"),   # 12:00 UTC = 7-8 am Toronto
+                targets=[targets.LambdaFunction(notify_fn)],
+            )
 
         # POST /ask -> tool-using agent (API Gateway caps integrations at 30 s)
         ask_fn = fn("AskFn", "ask.handler", timeout=29, memory=1024, env=llm_env)
@@ -240,7 +269,8 @@ class InfraStack(Stack):
             self, "SyllabusApi",
             cors_preflight=apigw.CorsPreflightOptions(
                 allow_origins=allowed_origins,
-                allow_methods=[apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST, apigw.CorsHttpMethod.DELETE],
+                allow_methods=[apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST, apigw.CorsHttpMethod.PUT,
+                               apigw.CorsHttpMethod.PATCH, apigw.CorsHttpMethod.DELETE],
                 allow_headers=["content-type", "authorization"],
                 max_age=Duration.hours(1),
             ),
@@ -257,7 +287,11 @@ class InfraStack(Stack):
             ("/uploads", [apigw.HttpMethod.POST], uploads_integration),
             ("/syllabi", [apigw.HttpMethod.GET], api_integration),
             ("/syllabi/{id}", [apigw.HttpMethod.GET, apigw.HttpMethod.DELETE], api_integration),
+            ("/syllabi/{id}/deadlines", [apigw.HttpMethod.POST], api_integration),
+            ("/syllabi/{id}/deadlines/{n}", [apigw.HttpMethod.PATCH, apigw.HttpMethod.DELETE], api_integration),
             ("/deadlines", [apigw.HttpMethod.GET], api_integration),
+            ("/settings", [apigw.HttpMethod.GET, apigw.HttpMethod.PUT], api_integration),
+            ("/settings/test-email", [apigw.HttpMethod.POST], api_integration),
             ("/ask", [apigw.HttpMethod.POST], ask_integration),
         ]:
             api.add_routes(path=path, methods=methods, integration=integration, authorizer=authorizer)

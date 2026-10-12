@@ -109,3 +109,24 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 .chip { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 999px; }
 .composer { display: flex; gap: 0.5rem; position: sticky; bottom: 0; padding: 1rem 0; background: var(--bg); }
 .composer input { flex: 1; }
+
+/* ---- deadline editing ---- */
+button.secondary { background: var(--surface); color: var(--accent); }
+select { font: inherit; padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid var(--line);
+         background: var(--surface); color: var(--text); }
+.head-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.row-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.875rem; }
+.deadline-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; align-items: end;
+                 margin-bottom: 0.6rem; }
+.deadline-form label { display: grid; gap: 0.3rem; font-size: 0.875rem; }
+.deadline-form .wide { grid-column: 1 / -1; }
+.deadline-form .actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+@media (max-width: 640px) { .deadline-form { grid-template-columns: 1fr 1fr; } }
+
+/* ---- settings ---- */
+.settings { display: grid; gap: 0.9rem; max-width: 560px; }
+.settings h2 { margin: 0; color: var(--text); font-size: 1rem; }
+.settings label { display: grid; gap: 0.3rem; font-size: 0.9rem; }
+.settings label.toggle { display: flex; gap: 0.6rem; align-items: center; }
+.settings button { justify-self: start; }
+.ok { color: var(--ok); }

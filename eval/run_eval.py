@@ -43,7 +43,8 @@ def predict(label):
     pages = extract_pages(pdf)
     check_size(pages)
     validated = validate(extract(pages, label.get("termStart")), label.get("termStart"))
-    return validated["deadlines"]
+    # sourceText quotes the (copyrighted) outline; scoring doesn't need it, so results stay quote-free
+    return [{k: v for k, v in d.items() if k != "sourceText"} for d in validated["deadlines"]]
 
 
 def report(summary, per_file):
