@@ -47,8 +47,50 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 .small { font-size: 0.875rem; }
 .error { color: var(--danger); }
 
-.login { max-width: 420px; margin: 8vh auto; padding: 0 16px; text-align: center; }
-.login [data-amplify-authenticator] { margin-top: 1.5rem; text-align: left; }
+/* ---- landing (signed-out) ---- */
+.landing { max-width: 1080px; margin: 0 auto; padding: 0 16px 3rem; }
+.landing-nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 3rem; align-items: center; padding: 2.5rem 0 3rem; }
+.hero h1 { font-size: clamp(2rem, 4.2vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; }
+.lede { font-size: 1.125rem; color: var(--muted); margin: 1.25rem 0 1.75rem; max-width: 34rem; }
+.hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.hero-actions button { padding: 0.65rem 1.25rem; font-weight: 600; }
+.proof { margin-top: 1.5rem; font-size: 0.9rem; color: var(--muted); }
+.proof strong { color: var(--ok); }
+
+/* Amplify's sign-in card: colours come from src/theme.ts; only shape is set here */
+.hero-auth [data-amplify-router] { border-radius: 14px; overflow: hidden; border-color: var(--line);
+                                   box-shadow: 0 10px 30px rgb(0 0 0 / 0.08); }
+
+.preview { display: flex; justify-content: center; padding: 1rem 0 3.5rem; }
+.preview-window { width: 100%; max-width: 760px; border: 1px solid var(--line); border-radius: 14px;
+                  background: var(--surface); box-shadow: 0 20px 50px rgb(0 0 0 / 0.08); overflow: hidden; }
+.preview-bar { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.preview-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.preview-body { padding: 1rem 1.25rem 1.25rem; }
+.preview-title { font-weight: 700; margin: 0; }
+.preview-body ul { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+.preview-body .deadline { background: var(--bg); }
+
+.steps h2, .cta h2 { color: var(--text); font-size: 1.5rem; margin: 0 0 1.25rem; text-align: center; }
+.steps ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+.step-n { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+          background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.steps h3, .feature h3 { font-size: 1rem; margin: 0.75rem 0 0.35rem; }
+.steps p, .feature p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem 2.5rem; padding: 3.5rem 0; }
+.feature h3 { margin-top: 0; }
+
+.cta { text-align: center; padding: 2.5rem 1rem; border-radius: 16px; background: var(--accent-soft); }
+.cta button { padding: 0.7rem 1.5rem; font-weight: 600; }
+.landing-footer { text-align: center; padding-top: 2rem; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 2rem; padding-top: 1rem; }
+  .steps ol, .features { grid-template-columns: 1fr; }
+}
 
 .shell { max-width: 880px; margin: 0 auto; padding: 0 16px 4rem; }
 .topbar { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--line);

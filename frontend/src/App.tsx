@@ -1,8 +1,9 @@
-import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import Ask from "./pages/Ask";
 import Courses from "./pages/Courses";
 import Deadlines from "./pages/Deadlines";
+import Landing from "./pages/Landing";
 import Settings from "./pages/Settings";
 
 function Shell() {
@@ -37,12 +38,5 @@ function Shell() {
 
 export default function App() {
   const { authStatus } = useAuthenticator((ctx) => [ctx.authStatus]);
-  if (authStatus === "authenticated") return <Shell />;
-  return (
-    <div className="login">
-      <h1>Syllabus Agent</h1>
-      <p className="muted">Upload your course outlines. Get every deadline in one place.</p>
-      <Authenticator signUpAttributes={["email"]} />
-    </div>
-  );
+  return authStatus === "authenticated" ? <Shell /> : <Landing />;
 }

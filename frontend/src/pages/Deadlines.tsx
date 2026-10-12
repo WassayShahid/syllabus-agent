@@ -157,7 +157,9 @@ export default function Deadlines() {
       )}
 
       {range === "upcoming" && dated.length > 0 && (
-        <p className="muted">{dated.length} items worth {Math.round(total * 10) / 10}% of your grades in total.</p>
+        <p className="muted">
+          {dated.length} {dated.length === 1 ? "item" : "items"} worth {Math.round(total * 10) / 10}% of your grades in total.
+        </p>
       )}
 
       {groupByWeek(dated).map(([week, list]) => (

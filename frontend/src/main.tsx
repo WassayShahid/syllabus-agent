@@ -1,11 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Amplify } from "aws-amplify";
-import { Authenticator } from "@aws-amplify/ui-react";
+import { Authenticator, ThemeProvider } from "@aws-amplify/ui-react";
 import { BrowserRouter } from "react-router-dom";
 import "@aws-amplify/ui-react/styles.css";
 import "./styles.css";
 import App from "./App";
+import { amplifyTheme } from "./theme";
 
 Amplify.configure({
   Auth: {
@@ -19,10 +20,12 @@ Amplify.configure({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Authenticator.Provider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Authenticator.Provider>
+    <ThemeProvider theme={amplifyTheme} colorMode="system">
+      <Authenticator.Provider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Authenticator.Provider>
+    </ThemeProvider>
   </StrictMode>,
 );
